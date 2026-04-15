@@ -1,0 +1,14 @@
+- name: Galera - Cluster stoppen (Joiner zuerst)
+  hosts: node3,node2
+  become: true
+  serial: 1
+  tasks:
+    - name: Compose down
+      command: docker compose -f /docker/galera/docker-compose.yml down
+
+- name: Galera - Bootstrap Node stoppen
+  hosts: node1
+  become: true
+  tasks:
+    - name: Compose down
+      command: docker compose -f /docker/galera/docker-compose.yml down

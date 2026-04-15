@@ -1,0 +1,6 @@
+- name: Neue IP setzen
+  ansible.windows.win_powershell:
+    script: |
+      $nic = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object -First 1
+      netsh interface ipv4 set address name="$($nic.Name)" static {{ vm_ip }} 255.255.255.0 {{ template_gateway }}
+  ignore_errors: true

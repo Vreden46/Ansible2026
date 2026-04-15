@@ -1,0 +1,16 @@
+---
+- name: Load image on nodes (step 3)
+  hosts: node1,node2
+  become: true
+  gather_facts: false
+  vars:
+    image_tar_node: "/tmp/dockerha-devlast.tar"
+    image_name: "dockerha:devlast"
+
+  tasks:
+    - name: Load image from tar
+      command: docker load -i {{ image_tar_node }}
+
+    - name: Verify image is present
+      command: docker image inspect {{ image_name }}
+      changed_when: false

@@ -1,0 +1,41 @@
+---
+- name: Docker – nur Running & Restarting kompakt
+  hosts: node1:node2:node3
+  gather_facts: no
+  become: true
+
+  tasks:
+    - name: Container-Liste (Name, Status)
+      ansible.builtin.command:
+        cmd: docker ps -a --format '{{"{{"}}.Names{{"}}"}}\t{{"{{"}}.Status{{"}}"}}'
+      register: dps
+      changed_when: false
+
+    - name: Ausgabe (kurz & lesbar)
+      ansible.builtin.debug:
+        var: report
+      vars:
+        running: >-
+          {{
+            dps.stdout_lines
+            | select('search', '\tUp ')
+            | map('regex_replace', '^([^\\t]+)\\t.*$', '\\1')
+            | list
+          }}
+        restarting: >-
+          {{
+            dps.stdout_lines
+            | select('search', '\tRestarting')
+            | map('regex_replace', '^([^\\t]+)\\t(.*)$', '\\1 -> \\2')
+            | list
+          }}
+        report: >-
+          {{
+            [
+              'Host: ' ~ inventory_hostname,
+              'RUNNING: ' ~ (running|join(', ') if running|length>0 else '(keine)'),
+              'RESTARTING: ' ~ (restarting|join(', ') if restarting|length>0 else '(keine)')
+            ]
+          }}
+
+

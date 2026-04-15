@@ -1,0 +1,15 @@
+---
+- name: Ubuntu Update (safe)
+  hosts: lab
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Paketliste aktualisieren
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Updates installieren (safe)
+      apt:
+        upgrade: safe

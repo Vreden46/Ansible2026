@@ -1,0 +1,77 @@
+### BEGIN Host: testdo.vreden.local
+version: '3.8'
+  services:
+    mariadb:
+      image: mariadb:11
+      container_name: galera-nodex # oder galera-node-78
+      environment:
+        - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+        - MYSQL_DATABASE=eventdb
+      volumes:
+        - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+        - db_data:/var/lib/mysql
+      command:
+        [
+          "mariadbd",
+          "--wsrep_cluster_address=gcomm://192.168.0.77,192.168.0.76,192.168.0.157",
+          "--wsrep_node_address=192.168.0.157",
+          "--port=3307"
+        ]
+      restart: unless-stopped
+      network_mode: "host"
+
+  volumes:
+    db_data:
+### END Host: testdo.vreden.local
+### BEGIN Host: docker.vreden.local
+version: '3.8'
+  services:
+    mariadb:
+      image: mariadb:11
+      container_name: galera-nodex
+      environment:
+        - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+        - MYSQL_DATABASE=eventdb
+      volumes:
+        - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+        - db_data:/var/lib/mysql
+      command:
+        [
+          "mariadbd",
+          "--wsrep_cluster_address=gcomm://",
+          "--wsrep_node_address=192.168.0.77",
+          "--wsrep_new_cluster",
+          "--port=3307"
+        ]
+      restart: unless-stopped
+      network_mode: "host"
+
+  volumes:
+    db_data:
+
+### END Host: docker.vreden.local
+### BEGIN Host: docker2.vreden.local
+version: '3.8'
+  services:
+    mariadb:
+      image: mariadb:11
+      container_name: galera-nodex # oder galera-node-78
+      environment:
+        - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+        - MYSQL_DATABASE=eventdb
+      volumes:
+        - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+        - db_data:/var/lib/mysql
+      command:
+        [
+          "mariadbd",
+          "--wsrep_cluster_address=gcomm://192.168.0.77,192.168.0.76,192.168.0.157",
+          "--wsrep_node_address=192.168.0.76",
+          "--port=3307"
+        ]
+      restart: unless-stopped
+      network_mode: "host"
+
+  volumes:
+    db_data:
+### END Host: docker2.vreden.local

@@ -1,0 +1,14 @@
+- name: Galera - Wipe (stop + Volumes löschen)
+  hosts: node3,node2
+  become: true
+  serial: 1
+  tasks:
+    - name: Compose down mit Volumes
+      command: docker compose -f /docker/galera/docker-compose.yml down -v
+
+- name: Galera - Wipe Bootstrap Node
+  hosts: node1
+  become: true
+  tasks:
+    - name: Compose down mit Volumes
+      command: docker compose -f /docker/galera/docker-compose.yml down -v

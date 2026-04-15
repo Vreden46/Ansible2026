@@ -1,0 +1,13 @@
+- name: Clone Windows VM
+  community.proxmox.proxmox_kvm:
+    api_host: "{{ proxmox_host }}"
+    api_user: "{{ api_user }}"
+    api_token_id: "{{ api_token_id }}"
+    api_token_secret: "{{ api_token_secret }}"
+    validate_certs: false
+    node: "{{ proxmox_node }}"
+    clone: "{{ win_template_name }}"
+    newid: "{{ vm_id }}"
+    name: "{{ vm_name }}"
+    full: true
+    timeout: 180

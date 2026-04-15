@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: galera-node-77
+    environment:
+      - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+      - MYSQL_DATABASE=eventdb
+    volumes:
+      - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+      - db_data:/var/lib/mysql
+    command:
+      [
+        "mariadbd",
+        "--wsrep_cluster_address=gcomm://",
+        "--wsrep_node_address=192.168.0.77",
+        "--wsrep_node_name=galera-77",
+        "--wsrep-new-cluster",
+        "--port=3307"
+      ]
+    restart: unless-stopped
+    network_mode: "host"
+
+volumes:
+  db_data:

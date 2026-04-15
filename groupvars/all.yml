@@ -1,0 +1,16 @@
+proxmox_host: "192.168.0.10"
+proxmox_node: "pve"
+
+api_user: "root@pam"
+api_token_id: "ansible"
+api_token_secret: "ea9eb08e-6855-4708-9e47-6b198279b71e"
+
+win_template_name: "wintemp1"
+
+
+template_ip: "192.168.0.161"
+template_gateway: "192.168.0.1"
+template_prefix: 24
+
+win_admin_user: "Administrator"
+win_admin_password: "MeinSicheresPasswort"

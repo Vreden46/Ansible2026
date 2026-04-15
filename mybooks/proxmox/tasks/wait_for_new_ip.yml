@@ -1,0 +1,5 @@
+- name: Auf WinRM der neuen IP warten
+  wait_for:
+    host: "{{ vm_ip }}"
+    port: 5985
+    timeout: 300

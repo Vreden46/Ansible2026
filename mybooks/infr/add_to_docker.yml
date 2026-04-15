@@ -1,0 +1,16 @@
+---
+- name: User torsten für Docker berechtigen
+  hosts: chemnitz
+  become: true
+
+  tasks:
+    - name: Sicherstellen, dass die Gruppe docker existiert
+      group:
+        name: docker
+        state: present
+
+    - name: User torsten der Gruppe docker hinzufügen
+      user:
+        name: torsten
+        groups: docker
+        append: true

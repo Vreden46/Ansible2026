@@ -1,0 +1,55 @@
+---
+- name: Start Galera Node 1
+  hosts: chem1
+  become: true
+
+  tasks:
+
+    - name: docker compose up
+      command: docker compose up -d
+      args:
+        chdir: /docker/galera
+
+
+- name: Pause nach Node 1
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - pause:
+        seconds: 60
+
+
+
+- name: Start Galera Node 2
+  hosts: chem2
+  become: true
+
+  tasks:
+
+    - name: docker compose up
+      command: docker compose up -d
+      args:
+        chdir: /docker/galera
+
+
+- name: Pause nach Node 2
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - pause:
+        seconds: 60
+
+
+
+- name: Start Galera Node 3
+  hosts: chem3
+  become: true
+
+  tasks:
+
+    - name: docker compose up
+      command: docker compose up -d
+      args:
+        chdir: /docker/galera

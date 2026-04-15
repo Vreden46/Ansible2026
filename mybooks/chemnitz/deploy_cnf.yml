@@ -1,0 +1,21 @@
+- name: Docker Compose-Dateien verteilen
+  hosts: chemnitz
+  become: true
+  vars:
+    compose_dest: /docker/galera/conf/galera.cnf
+  tasks:
+    - name: Zielverzeichnis anlegen
+      file:
+        path: "{{ compose_dest | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: galera.cnf kopieren
+      copy:
+        src: /home/torsten/ansible/mybooks/chemnitz/conf/galera.cnf
+        dest: "{{ compose_dest }}"
+        owner: root
+        group: root
+        mode: '0644'

@@ -1,0 +1,36 @@
+- name: SNMP installieren
+  ansible.windows.win_powershell:
+    script: |
+      Install-WindowsFeature SNMP-Service,SNMP-WMI-Provider -IncludeManagementTools
+
+- name: SNMP Community setzen
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\SNMP\Parameters\ValidCommunities
+    name: "1uK-M0nit0ring"
+    data: 4
+    type: dword
+
+- name: SNMP Manager 10.1.52.138 setzen
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\SNMP\Parameters\PermittedManagers
+    name: "2"
+    data: "10.1.52.138"
+    type: string
+
+- name: SNMP Manager 10.1.52.139 setzen
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\SNMP\Parameters\PermittedManagers
+    name: "3"
+    data: "10.1.52.139"
+    type: string
+
+- name: Default Community public entfernen
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Services\SNMP\Parameters\ValidCommunities
+    name: public
+    state: absent
+
+- name: SNMP Dienst neu starten
+  ansible.windows.win_service:
+    name: SNMP
+    state: restarted

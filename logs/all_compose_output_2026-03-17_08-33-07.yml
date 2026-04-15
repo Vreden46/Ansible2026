@@ -1,0 +1,79 @@
+### BEGIN Host: chemnitz1.vreden.local
+version: '3.8'
+  services:
+    mariadb:
+      image: mariadb:11
+      container_name: galera-node-91
+      environment:
+        - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+        - MYSQL_DATABASE=eventdb
+      volumes:
+        - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+        - db_data:/var/lib/mysql
+      command:
+        [
+          "mariadbd",
+          "--wsrep_cluster_address=gcomm://",
+          "--wsrep_node_address=192.168.0.91",
+          "--wsrep_node_name=galera-91",
+          "--wsrep-new-cluster",
+          "--port=3307"
+        ]
+      restart: unless-stopped
+      network_mode: "host"
+
+  volumes:
+    db_data:
+### END Host: chemnitz1.vreden.local
+### BEGIN Host: chemnitz2.vreden.local
+version: '3.8'
+  services:
+    mariadb:
+      image: mariadb:11
+      container_name: galera-node-92
+      environment:
+        - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+        - MYSQL_DATABASE=eventdb
+      volumes:
+        - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+        - db_data:/var/lib/mysql
+      command:
+        [
+          "mariadbd",
+          "--wsrep_cluster_address=gcomm://192.168.0.91,192.168.0.92,192.168.0.93",
+          "--wsrep_node_name=galera-92",
+          "--wsrep_node_address=192.168.0.92",
+          "--port=3307"
+        ]
+      restart: unless-stopped
+      network_mode: "host"
+
+  volumes:
+    db_data:
+### END Host: chemnitz2.vreden.local
+### BEGIN Host: chemnitz3.vreden.local
+version: '3.8'
+  services:
+    mariadb:
+      image: mariadb:11
+      container_name: galera-node-93 # oder galera-node-78
+      environment:
+        - MYSQL_ROOT_PASSWORD=MeinSicheresPasswort
+        - MYSQL_DATABASE=eventdb
+      volumes:
+        - ./conf/galera.cnf:/etc/mysql/conf.d/galera.cnf
+        - db_data:/var/lib/mysql
+      command:
+        [
+          "mariadbd",
+          "--wsrep_cluster_address=gcomm://192.168.0.91,192.168.0.92,192.168.0.93",
+          "--wsrep_node_name=galera-93",
+          "--wsrep_node_address=192.168.0.93",
+          "--port=3307"
+        ]
+      restart: unless-stopped
+      network_mode: "host"
+
+  volumes:
+    db_data:
+### END Host: chemnitz3.vreden.local

@@ -1,0 +1,4 @@
+- name: Hostname setzen
+  ansible.windows.win_hostname:
+    name: "{{ vm_name }}"
+  register: hostname_result

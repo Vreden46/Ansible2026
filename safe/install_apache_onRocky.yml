@@ -1,0 +1,16 @@
+---
+- name: Install Apache on Ubuntu
+  hosts: centos
+  become: yes
+  tasks:
+  
+  - name: install httpd and php package
+     dnf:
+       name:
+         - httpd
+         - php
+       state: latest
+       update_cache: yes
+     when: ansible_distribution == "Rocky"
+ 
+   

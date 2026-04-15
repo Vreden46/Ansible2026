@@ -1,0 +1,63 @@
+---
+- name: Clone Windows VM on Proxmox
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - import_tasks: tasks/clone_windows_vm.yml
+    - import_tasks: tasks/start_windows_vm.yml
+    - import_tasks: tasks/wait_for_windows_boot.yml
+    - import_tasks: tasks/add_temp_windows_host.yml
+
+- name: Hostname und IP setzen
+  hosts: new_windows_vm
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - import_tasks: tasks/set_windows_hostname.yml
+    - import_tasks: tasks/reboot_after_hostname.yml
+    - import_tasks: tasks/set_windows_ip.yml
+
+- name: Warten bis neue IP erreichbar ist
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - import_tasks: tasks/wait_for_new_ip.yml
+    
+- name: Finalen Windows Host hinzufügen
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - import_tasks: tasks/add_final_windows_host.yml
+
+- name: SNMP installieren und konfigurieren
+  hosts: new_windows_vm_final
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - import_tasks: tasks/install_and_configure_snmp.yml

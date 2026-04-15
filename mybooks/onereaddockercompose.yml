@@ -1,0 +1,38 @@
+- name: Docker Compose Dateien auslesen
+  hosts: galera
+  become: true
+  gather_facts: false
+
+  pre_tasks:
+    - name: Timestamp einmal auf dem Control-Node erzeugen
+      run_once: true
+      delegate_to: localhost
+      become: false
+      ansible.builtin.set_fact:
+        timestamp: "{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M-%S') }}"
+        output_file: "/home/torsten/ansible/logs/all_compose_output_{{ timestamp }}.yml"
+
+    - name: Log-Ordner auf dem Control-Node sicherstellen
+      run_once: true
+      delegate_to: localhost
+      become: false
+      ansible.builtin.file:
+        path: /home/torsten/ansible/logs
+        state: directory
+        mode: "0755"
+
+  tasks:
+    - name: Inhalt der docker-compose.yml lesen
+      ansible.builtin.slurp:
+        src: /docker/galera/docker-compose.yml
+      register: compose_file
+
+    - name: Hänge Inhalt pro Host in zentrale Datei (auf Control-Node)
+      delegate_to: localhost
+      become: false
+      ansible.builtin.blockinfile:
+        path: "{{ output_file }}"
+        create: yes
+        marker: "### {mark} Host: {{ inventory_hostname }}"
+        block: |
+          {{ compose_file['content'] | b64decode | indent(2) }}

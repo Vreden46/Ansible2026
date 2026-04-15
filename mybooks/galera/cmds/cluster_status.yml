@@ -1,0 +1,38 @@
+---
+- name: Galera - Container Status
+  hosts: node1,node2,node3
+  become: true
+  tasks:
+    - name: docker ps (nur galera)
+      command:
+        argv:
+          - docker
+          - ps
+          - --filter
+          - name=galera-node
+          - --format
+          - "table {{'{{'}}.Names{{'}}'}}\t{{'{{'}}.Status{{'}}'}}\t{{'{{'}}.Ports{{'}}'}}"
+      register: ps_out
+      changed_when: false
+
+    - name: Ausgabe docker ps
+      debug:
+        var: ps_out.stdout_lines
+
+- name: Galera - WSREP Status (von chem1)
+  hosts: chem1
+  become: true
+  tasks:
+    - name: wsrep status auslesen
+      command: >
+        docker exec galera-node-77 mariadb -uroot -pMeinSicheresPasswort
+        -e "SHOW STATUS LIKE 'wsrep_cluster_size';
+            SHOW STATUS LIKE 'wsrep_cluster_status';
+            SHOW STATUS LIKE 'wsrep_local_state_comment';"
+      register: wsrep_out
+      changed_when: false
+      failed_when: false
+
+    - name: Ausgabe wsrep Status
+      debug:
+        var: wsrep_out.stdout_lines

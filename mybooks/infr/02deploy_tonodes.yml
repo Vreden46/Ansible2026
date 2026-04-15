@@ -1,0 +1,24 @@
+---
+- name: Copy docker image tar to nodes (step 2)
+  hosts: node1,node2
+  become: true
+  gather_facts: false
+  vars:
+    controller_tar: "/tmp/dockerha-devlast.tar"
+    image_tar_node: "/tmp/dockerha-devlast.tar"
+
+  tasks:
+    - name: Copy tar from ansiblemaster (controller) to node
+      copy:
+        src: "{{ controller_tar }}"
+        dest: "{{ image_tar_node }}"
+        mode: "0644"
+
+    - name: Verify tar exists on node
+      stat:
+        path: "{{ image_tar_node }}"
+      register: tarstat
+
+    - name: Show tar size on node
+      debug:
+        msg: "node={{ inventory_hostname }} exists={{ tarstat.stat.exists }} size={{ tarstat.stat.size | default('n/a') }}"

@@ -1,0 +1,4 @@
+- name: Reboot nach Änderung
+  ansible.windows.win_reboot:
+    reboot_timeout: 120
+  when: hostname_result.reboot_required

@@ -1,0 +1,21 @@
+---
+- name: Export image on buildhost and pull it to ansiblemaster (local controller)
+  hosts: buildhost
+  become: true
+  gather_facts: false
+  vars:
+    image_name: "dockerha:devlast"
+    image_tar: "/tmp/dockerha-devlast.tar"
+  tasks:
+    - name: Ensure image exists on buildhost
+      command: docker image inspect {{ image_name }}
+      changed_when: false
+
+    - name: Save image to tar on buildhost
+      command: docker save -o {{ image_tar }} {{ image_name }}
+
+    - name: Fetch tar to ansiblemaster (controller)
+      fetch:
+        src: "{{ image_tar }}"
+        dest: "/tmp/dockerha-devlast.tar"
+        flat: true

@@ -1,0 +1,21 @@
+- name: Galera - Bootstrap Node starten
+  hosts: node1
+  become: true
+  tasks:
+    - name: Compose up (Bootstrap)
+      command: docker compose -f /docker/galera/docker-compose.yml up -d
+
+    - name: Warten bis MariaDB Port offen ist
+      wait_for:
+        host: "{{ ansible_host | default(inventory_hostname) }}"
+        port: 3307
+        delay: 2
+        timeout: 180
+
+- name: Galera - Joiner starten (nacheinander)
+  hosts: node2,node3
+  become: true
+  serial: 1
+  tasks:
+    - name: Compose up (Joiner)
+      command: docker compose -f /docker/galera/docker-compose.yml up -d

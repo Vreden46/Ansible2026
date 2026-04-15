@@ -1,0 +1,10 @@
+[mysqld]
+# Galera-Grundkonfiguration
+wsrep_on=ON
+wsrep_provider=/usr/lib/galera/libgalera_smm.so
+wsrep_cluster_name=galera_cluster
+binlog_format=row
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+wsrep_sst_method=mariabackup
+port=3307  # Hier den gewünschten Port hinzufügen

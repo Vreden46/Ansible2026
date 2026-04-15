@@ -1,0 +1,94 @@
+---
+- name: Clone Windows VM on Proxmox
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - name: Clone Windows VM
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ api_user }}"
+        api_token_id: "{{ api_token_id }}"
+        api_token_secret: "{{ api_token_secret }}"
+        validate_certs: false
+        node: "{{ proxmox_node }}"
+        clone: "{{ win_template_name }}"
+        newid: "{{ vm_id }}"
+        name: "{{ vm_name }}"
+        full: true
+        timeout: 180
+
+    - name: Start Windows VM
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_host }}"
+        api_user: "{{ api_user }}"
+        api_token_id: "{{ api_token_id }}"
+        api_token_secret: "{{ api_token_secret }}"
+        validate_certs: false
+        node: "{{ proxmox_node }}"
+        vmid: "{{ vm_id }}"
+        state: started
+        timeout: 180
+
+    - name: Warten bis Windows hochkommt
+      pause:
+        seconds: 120
+
+    - name: Windows Host temporär hinzufügen
+      add_host:
+        name: new_windows_vm
+        ansible_host: "{{ template_ip }}"
+        ansible_user: "{{ win_admin_user }}"
+        ansible_password: "{{ win_admin_password }}"
+        ansible_connection: winrm
+        ansible_port: 5985
+        ansible_winrm_transport: ntlm
+        ansible_winrm_server_cert_validation: ignore
+
+- name: Hostname und IP setzen
+  hosts: new_windows_vm
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - name: Hostname setzen
+      ansible.windows.win_hostname:
+        name: "{{ vm_name }}"
+      register: hostname_result
+    
+    - name: Reboot nach Änderung
+      ansible.windows.win_reboot:
+      when: hostname_result.reboot_required
+      timeout: 120
+
+    - name: Neue IP setzen
+      ansible.windows.win_powershell:
+        script: |
+          $nic = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object -First 1
+          netsh interface ipv4 set address name="$($nic.Name)" static {{ vm_ip }} 255.255.255.0 {{ template_gateway }}
+      ignore_errors: true
+
+
+- name: Warten bis neue IP erreichbar ist
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - ../../groupvars/all.yml
+
+  tasks:
+    - name: Auf WinRM der neuen IP warten
+      wait_for:
+        host: "{{ vm_ip }}"
+        port: 5985
+        timeout: 300

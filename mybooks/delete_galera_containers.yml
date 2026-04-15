@@ -1,0 +1,24 @@
+- name: Galera Container komplett entfernen
+  hosts: galera
+  become: true
+
+  tasks:
+
+    - name: Galera Container ermitteln
+      shell: docker ps -aq --filter "name=galera-node"
+      register: galera_containers
+      changed_when: false
+
+    - name: Container stoppen (falls aktiv)
+      shell: docker stop {{ galera_containers.stdout_lines | join(' ') }}
+      when: galera_containers.stdout_lines | length > 0
+
+    - name: Container entfernen
+      shell: docker rm {{ galera_containers.stdout_lines | join(' ') }}
+      when: galera_containers.stdout_lines | length > 0
+
+    - name: Ergebnis
+      debug:
+        msg: >
+          {{ inventory_hostname }}:
+          {{ galera_containers.stdout_lines | length }} Container entfernt.

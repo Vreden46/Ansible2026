@@ -1,0 +1,22 @@
+- name: Docker Compose-Dateien auf alle Nodes verteilen
+  hosts: node1:node2:node3
+  become: true
+  vars:
+    compose_dest: /docker/galera/docker-compose.yml
+    compose_src_base: /home/torsten/ansible/mybooks/chemnitz
+  tasks:
+    - name: Zielverzeichnis anlegen
+      ansible.builtin.file:
+        path: "{{ compose_dest | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: docker-compose.yml gruppen-spezifisch kopieren (node1/node2/node3)
+      ansible.builtin.copy:
+        src: "{{ compose_src_base }}/{{ (group_names | intersect(['node1','node2','node3']))[0] }}/docker-compose.yml"
+        dest: "{{ compose_dest }}"
+        owner: root
+        group: root
+        mode: "0644"

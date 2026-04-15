@@ -1,0 +1,31 @@
+---
+- name: Zeige laufende Docker-Container mit Ports (ohne community.docker)
+  hosts: node1:node2:node3
+  gather_facts: no
+  become: true        # falls Docker Root-Rechte braucht; ggf. auf false setzen
+
+  tasks:
+    - name: Führe "docker ps" mit Formatierung aus
+      ansible.builtin.command:
+        cmd: docker ps --format '{{"{{"}}.Names{{"}}"}}\t{{"{{"}}.Image{{"}}"}}\t{{"{{"}}.Ports{{"}}"}}'
+      register: docker_ps
+      changed_when: false
+
+    - name: Hübsche Tabellen-Ausgabe je Host
+      ansible.builtin.debug:
+        msg: |
+          Host: {{ inventory_hostname }}
+          NAME                 IMAGE                          PORTS
+          {% if docker_ps.stdout_lines|length == 0 %}
+          (keine laufenden Container)
+          {% else %}
+          {% for line in docker_ps.stdout_lines %}
+          {% set p = line.split('\t') %}
+          {{ "%-20s" | format(p[0]) }} {{ "%-30s" | format(p[1]) }}
+          {% for port in (p[2] if p|length>2 else "") .split(",") %}
+             {{ port | trim }}
+          {% endfor %}
+
+          {% endfor %}
+          {% endif %}
+

@@ -1,0 +1,23 @@
+ansible-playbook --list-tags update_for_all.yml
+
+ansible-playbook --tags update --ask-become-pass update_for_all.yml
+
+ansible-playbook --tags copy --ask-become-pass install_ubuansi.yml
+
+
+ansible-playbook --tags Install --ask-become-pass install_ubuansi.yml
+
+
+
+https://github.com/Vreden46/ansible/archive/refs/heads/main.zip
+
+
+ansible-playbook --ask-become-pass install_zg.yml
+
+
+
+ansible all -m gather_facts --limit rockyansible.vreden.home -bK --become-method su | grep ansible_distribution | ohne sudo
+
+ansible all -m gather_facts --limit raspberrypi.vreden.home -bK | grep ansible_distribution
+
+ssh-copy-id -i /.ssh/id_rsa.pub torsten@mywebserver.vreden.home

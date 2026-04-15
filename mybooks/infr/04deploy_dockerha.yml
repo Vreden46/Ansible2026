@@ -1,0 +1,41 @@
+---
+- name: Deploy docker compose on nodes (step 4)
+  hosts: node1,node2
+  become: true
+  gather_facts: false
+  vars:
+    deploy_dir: "/home/torsten/HAweb"
+    compose_file: "{{ deploy_dir }}/docker-compose.yml"
+
+  tasks:
+    - name: Ensure deploy directory exists
+      file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Write docker-compose.yml
+      copy:
+        dest: "{{ compose_file }}"
+        mode: "0644"
+        content: |
+          version: "3.9"
+          services:
+            app:
+              image: dockerha:devlast
+              container_name: dockerha
+              network_mode: "host"
+              restart: always
+              environment:
+                DB_HOST: "localhost"
+                DB_PORT: "3307"
+                DB_USER: "devuser"
+                DB_PASSWORD: "devpass"
+                DB_NAME: "eventdb"
+
+    - name: Start container with docker compose
+      command: docker compose -f {{ compose_file }} up -d
+
+    - name: Show running container
+      command: docker ps --filter "name=dockerha"
+      changed_when: false

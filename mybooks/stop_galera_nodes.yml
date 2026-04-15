@@ -1,0 +1,21 @@
+- name: Galera Container stoppen (Wildcard)
+  hosts: galera
+  become: true
+
+  tasks:
+
+    - name: Galera Container ermitteln
+      shell: docker ps -q --filter "name=galera-node"
+      register: galera_containers
+      changed_when: false
+
+    - name: Galera Container stoppen
+      shell: docker stop {{ galera_containers.stdout_lines | join(' ') }}
+      when: galera_containers.stdout_lines | length > 0
+
+    - name: Ausgabe
+      debug:
+        msg: >
+          {{ inventory_hostname }}:
+          {{ galera_containers.stdout_lines | length }} Container gestoppt.
+

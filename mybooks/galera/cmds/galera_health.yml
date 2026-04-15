@@ -1,0 +1,58 @@
+- name: Galera Status (minimal)
+  hosts: galera
+  become: true
+  gather_facts: false
+
+  vars:
+    mysql_host: "127.0.0.1"
+    mysql_port: 3307
+    mysql_user: "root"
+    mysql_password: "MeinSicheresPasswort"
+    mysql_client_image: "imega/mysql-client"
+
+  tasks:
+    - name: wsrep_cluster_size
+      command: >
+        docker run --rm --network host
+        -e MYSQL_PWD={{ mysql_password }}
+        {{ mysql_client_image }}
+        mysql -h{{ mysql_host }} -P{{ mysql_port }} -u{{ mysql_user }}
+        -N -B -e "SHOW STATUS LIKE 'wsrep_cluster_size';"
+      register: size
+      changed_when: false
+
+    - name: wsrep_cluster_status
+      command: >
+        docker run --rm --network host
+        -e MYSQL_PWD={{ mysql_password }}
+        {{ mysql_client_image }}
+        mysql -h{{ mysql_host }} -P{{ mysql_port }} -u{{ mysql_user }}
+        -N -B -e "SHOW STATUS LIKE 'wsrep_cluster_status';"
+      register: status
+      changed_when: false
+
+    - name: wsrep_incoming_addresses
+      command: >
+        docker run --rm --network host
+        -e MYSQL_PWD={{ mysql_password }}
+        {{ mysql_client_image }}
+        mysql -h{{ mysql_host }} -P{{ mysql_port }} -u{{ mysql_user }}
+        -N -B -e "SHOW STATUS LIKE 'wsrep_incoming_addresses';"
+      register: incoming
+      changed_when: false
+      
+    - name: wsrep_local_state_comment
+      command: >
+        docker run --rm --network host
+        -e MYSQL_PWD={{ mysql_password }}
+        {{ mysql_client_image }}
+        mysql -h{{ mysql_host }} -P{{ mysql_port }} -u{{ mysql_user }}
+        -N -B -e "SHOW STATUS LIKE 'wsrep_local_state_comment';"
+      register: sync
+      changed_when: false
+      
+
+    - name: Ausgabe pro Host (one line)
+      debug:
+        msg: "{{ inventory_hostname }} | size={{ size.stdout.split('\t')[1] }} | status={{ status.stdout.split('\t')[1] }} | incoming={{ incoming.stdout.split('\t')[1] }} | sync={{ sync.stdout.split('\t')[1] }}"
+

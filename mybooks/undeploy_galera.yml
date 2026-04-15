@@ -1,0 +1,11 @@
+- name: Galera undeploy (docker compose down)
+  hosts: galera
+  become: true
+  vars:
+    galera_dir: /docker/galera
+
+  tasks:
+    - name: Compose down (Container + Netzwerk weg)
+      shell: docker compose down --remove-orphans
+      args:
+        chdir: "{{ galera_dir }}"
