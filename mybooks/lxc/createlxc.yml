@@ -5,7 +5,7 @@
 
   vars:
     IP: "192.168.0.59"
-    PW: "Zulu12!"
+    PW: "PW"
     CN: "LXC-Test3"
     PWC: "fffff"
     VMID: 514
