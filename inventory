@@ -59,3 +59,10 @@ chemnitz3.vreden.local
 
 [proxmox]
 localhost ansible_connection=local
+
+[pvem]
+192.168.0.185 ansible_user=torsten
+
+[pvem:vars]
+ansible_become=true
+ansible_become_method=su

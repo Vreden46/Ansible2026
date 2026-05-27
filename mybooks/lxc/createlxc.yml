@@ -1,0 +1,86 @@
+---
+- name: Clone template
+  hosts: pvem
+  gather_facts: no
+
+  vars:
+    IP: "192.168.0.59"
+    PW: "Zulu12!"
+    CN: "LXC-Test3"
+    PWC: "fffff"
+    VMID: 514
+
+  tasks:
+
+    - name: Herunterladen des öffentlichen Schlüssels
+      uri:
+        url: "http://192.168.0.77:81/download/id_ed25519.pub"
+        method: GET
+        return_content: yes
+      register: pubkey_response
+
+    - name: Inhalt in Variable übernehmen
+      set_fact:
+        pub_content_variable: "{{ pubkey_response.content }}"
+
+    - name: Create LXC
+      community.general.proxmox:
+        vmid: "{{ VMID }}"
+        node: pvem
+        api_user: root@pam
+        api_password: "{{ PW }}"
+        api_host: 192.168.0.185
+        password: "{{ PWC }}"
+        storage: local-lvm
+        hostname: "{{ CN }}"
+        ostemplate: "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+        pubkey: "{{ pub_content_variable }}"
+        disk: "25"
+        memory: "512"
+        unprivileged: true
+        nameserver: "192.168.0.20"
+        netif: '{"net0":"name=eth0,ip={{ IP }}/24,gw=192.168.0.1,bridge=vmbr0"}'
+
+    - name: Start container
+      community.general.proxmox:
+        vmid: "{{ VMID }}"
+        node: pvem
+        api_user: root@pam
+        api_password: "{{ PW }}"
+        api_host: 192.168.0.185
+        state: started
+
+    - name: Warten bis Container gebootet ist
+      pause:
+        seconds: 15
+
+    - name: User torsten anlegen
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'id torsten || useradd -m -s /bin/bash torsten'
+   
+    - name: Torsten zu sudo hinzufügen
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'usermod -aG sudo torsten'
+
+    - name: Passwortloses sudo aktivieren
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'echo "torsten ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/torsten'
+
+    - name: Rechte setzen
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'chmod 440 /etc/sudoers.d/torsten'
+    
+
+    - name: .ssh Verzeichnis erstellen
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'mkdir -p /home/torsten/.ssh'
+
+    - name: Public Key für torsten setzen
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'echo "{{ pub_content_variable }}" > /home/torsten/.ssh/authorized_keys'
+
+    - name: Rechte setzen
+      shell: |
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'chown -R torsten:torsten /home/torsten/.ssh'
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'chmod 700 /home/torsten/.ssh'
+        /usr/sbin/pct exec {{ VMID }} -- bash -c 'chmod 600 /home/torsten/.ssh/authorized_keys'
